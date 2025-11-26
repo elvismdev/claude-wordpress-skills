@@ -5,6 +5,10 @@
     "name": "Elvis Morales",
     "email": "yo@elvismdev.io"
   },
+  "metadata": {
+    "description": "WordPress engineering skills for Claude Code",
+    "version": "1.2.1"
+  },
   "plugins": [
     {
       "name": "claude-wordpress-skills",
