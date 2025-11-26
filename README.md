@@ -23,7 +23,7 @@ Subscribe to receive all skills and updates (Recommended):
 /plugin marketplace add elvismdev/claude-wordpress-skills
 
 # Install specific skills
-/plugin install wp-performance-review@claude-wordpress-skills
+/plugin install claude-wordpress-skills@claude-wordpress-skills
 ```
 
 ### Option 2: Clone for Personal Use
