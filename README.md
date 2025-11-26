@@ -26,11 +26,10 @@ Subscribe to receive all skills and updates (Recommended):
 /plugin install claude-wordpress-skills@claude-wordpress-skills
 ```
 
-### Option 2: Clone for Personal Use
+### Option 2: Clone Locally
 
 ```bash
-# Clone to your personal skills directory
-git clone https://github.com/elvismdev/claude-wordpress-skills.git ~/.claude/skills/wordpress
+git clone https://github.com/elvismdev/claude-wordpress-skills.git ~/.claude/plugins/wordpress
 ```
 
 ### Option 3: Add to Project
@@ -39,7 +38,7 @@ Add as a git submodule for team-wide access:
 
 ```bash
 # In your project root
-git submodule add https://github.com/elvismdev/claude-wordpress-skills.git .claude/skills/wordpress
+git submodule add https://github.com/elvismdev/claude-wordpress-skills.git .claude/plugins/wordpress
 git commit -m "Add WordPress Claude skills"
 ```
 
@@ -56,7 +55,7 @@ cp -r skills/wp-performance-review ~/.claude/skills/
 
 ## Slash Commands
 
-When installed as a plugin, these commands become available:
+When installed, these commands become available:
 
 | Command | Description |
 |---------|-------------|
@@ -79,14 +78,13 @@ When installed as a plugin, these commands become available:
 /wp-perf .
 ```
 
-### Command Differences
+### Command Comparison
 
 | Aspect | `/wp-perf-review` | `/wp-perf` |
 |--------|-------------------|------------|
 | **Speed** | Thorough (slower) | Fast triage |
 | **Depth** | Full analysis + fixes | Critical patterns only |
 | **Output** | Grouped by severity with line numbers | Quick list of matches |
-| **References** | Loads anti-patterns.md, wp-query-guide.md as needed | Minimal |
 | **Use case** | Code review, PR review, optimization | Pre-deploy check, quick audit |
 
 When installed via marketplace, commands are namespaced:
