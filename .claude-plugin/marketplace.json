@@ -1,0 +1,11 @@
+{
+  "name": "claude-wordpress-skills",
+  "description": "WordPress engineering skills collection for Claude Code",
+  "plugins": [
+    {
+      "name": "wp-performance-review",
+      "source": "./skills/wp-performance-review",
+      "description": "WordPress performance code review and optimization analysis. Detects anti-patterns in database queries, hooks, object caching, AJAX, and template loading."
+    }
+  ]
+}

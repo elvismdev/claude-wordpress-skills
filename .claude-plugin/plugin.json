@@ -1,0 +1,24 @@
+{
+  "name": "claude-wordpress-skills",
+  "description": "Professional WordPress engineering skills for Claude Code — performance optimization, security auditing, Gutenberg block development, and theme/plugin best practices",
+  "version": "1.1.0",
+  "author": {
+    "name": "Elvis Morales",
+    "url": "https://github.com/elvismdev"
+  },
+  "repository": "https://github.com/elvismdev/claude-wordpress-skills",
+  "license": "MIT",
+  "keywords": [
+    "wordpress",
+    "performance",
+    "security",
+    "gutenberg",
+    "blocks",
+    "themes",
+    "plugins",
+    "woocommerce",
+    "php",
+    "claude-code",
+    "claude-skills"
+  ]
+}
