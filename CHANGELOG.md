@@ -7,9 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2025-11-26
+
 ### Added
 
-- Placeholder for upcoming changes
+- **Transients & Options checks** — Detect dynamic transient keys causing wp_options table bloat, frequently-changing data misuse, and large data storage on shared hosting without object cache
+- **WP-Cron bottleneck detection** — Identify missing `DISABLE_WP_CRON` constant, long-running callbacks blocking cron queue, and duplicate schedules from missing `wp_next_scheduled()` checks
+- **Conditional asset loading checks** — Flag `wp_enqueue_script`/`wp_enqueue_style` calls without conditional tags like `is_page()` or `is_singular()`
+- **New grep patterns** for quick detection:
+  - Asset loading without conditionals
+  - Dynamic transient keys (`set_transient` with variables)
+  - `wp_schedule_event` without `wp_next_scheduled` guard
+- **Comprehensive code examples** with BAD/GOOD patterns for all new checks
+- **CLAUDE.md** project documentation for Claude Code guidance
+
+## [1.2.1] - 2025-11-25
+
+### Changed
+
+- Added metadata section to marketplace.json for better plugin discovery
+
+## [1.2.0] - 2025-11-25
+
+### Changed
+
+- Refined README installation instructions
+- Improved plugin metadata consistency
 
 ## [1.1.0] - 2025-11-25
 
@@ -57,6 +80,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 28 quick-lookup patterns in anti-patterns.md
 - 90+ code examples with BAD/GOOD comparisons
 
-[Unreleased]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.2.1...v1.3.0
+[1.2.1]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/elvismdev/claude-wordpress-skills/releases/tag/v1.0.0
