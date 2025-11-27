@@ -1,11 +1,27 @@
 ---
 name: wp-performance-review
-description: WordPress performance code review and optimization analysis. Use when reviewing WordPress PHP code for performance issues, auditing themes/plugins for scalability, optimizing WP_Query usage, analyzing caching strategies, or when user mentions "performance review", "optimization audit", "slow WordPress", "scale WordPress", or "high-traffic WordPress". Detects anti-patterns in database queries, hooks, object caching, AJAX, and template loading.
+description: Use when reviewing WordPress PHP code for performance issues, auditing themes/plugins for scalability, optimizing WP_Query, analyzing caching strategies, or when user mentions "slow WordPress", "high-traffic", "performance review", "timeout", "500 error", "out of memory", or "site won't load". Detects anti-patterns in database queries, hooks, object caching, AJAX, and template loading that cause failures at scale.
 ---
 
 # WordPress Performance Review Skill
 
-Perform thorough performance code reviews for WordPress themes, plugins, and custom code.
+## Overview
+
+Systematic performance code review for WordPress themes, plugins, and custom code. **Core principle:** Scan critical issues first (OOM, unbounded queries, cache bypass), then warnings, then optimizations. Report with line numbers and severity levels.
+
+## When to Use
+
+**Use when:**
+- Reviewing PR/code for WordPress theme or plugin
+- User reports slow page loads, timeouts, or 500 errors
+- Auditing before high-traffic event (launch, sale, viral moment)
+- Optimizing WP_Query or database operations
+- Investigating memory exhaustion or DB locks
+
+**Don't use for:**
+- Security-only audits (use wp-security-review when available)
+- Gutenberg block development patterns (use wp-gutenberg-blocks when available)
+- General PHP code review not specific to WordPress
 
 ## Code Review Workflow
 
@@ -123,17 +139,47 @@ Different hosting environments require different approaches:
 // ❌ CRITICAL: Unbounded query.
 'posts_per_page' => -1
 
+// ✅ GOOD: Set reasonable limit, paginate if needed.
+'posts_per_page' => 100,
+'no_found_rows'  => true, // Skip count if not paginating.
+
 // ❌ CRITICAL: Never use query_posts().
 query_posts( 'cat=1' ); // Breaks pagination, conditionals.
+
+// ✅ GOOD: Use WP_Query or pre_get_posts filter.
+$query = new WP_Query( array( 'cat' => 1 ) );
+// Or modify main query:
+add_action( 'pre_get_posts', function( $query ) {
+    if ( $query->is_main_query() && ! is_admin() ) {
+        $query->set( 'cat', 1 );
+    }
+} );
 
 // ❌ CRITICAL: Missing WHERE clause (falsy ID becomes 0).
 $query = new WP_Query( array( 'p' => intval( $maybe_false_id ) ) );
 
+// ✅ GOOD: Validate ID before querying.
+if ( ! empty( $maybe_false_id ) ) {
+    $query = new WP_Query( array( 'p' => intval( $maybe_false_id ) ) );
+}
+
 // ❌ WARNING: LIKE with leading wildcard (full table scan).
 $wpdb->get_results( "SELECT * FROM wp_posts WHERE post_title LIKE '%term%'" );
 
+// ✅ GOOD: Use trailing wildcard only, or use WP_Query 's' parameter.
+$wpdb->get_results( $wpdb->prepare(
+    "SELECT * FROM wp_posts WHERE post_title LIKE %s",
+    $wpdb->esc_like( $term ) . '%'
+) );
+
 // ❌ WARNING: NOT IN queries (filter in PHP instead).
 'post__not_in' => $excluded_ids
+
+// ✅ GOOD: Fetch all, filter in PHP (faster for large exclusion lists).
+$posts = get_posts( array( 'posts_per_page' => 100 ) );
+$posts = array_filter( $posts, function( $post ) use ( $excluded_ids ) {
+    return ! in_array( $post->ID, $excluded_ids, true );
+} );
 ```
 
 ### Hooks & Actions
@@ -141,14 +187,27 @@ $wpdb->get_results( "SELECT * FROM wp_posts WHERE post_title LIKE '%term%'" );
 // ❌ WARNING: Code runs on every request via init.
 add_action( 'init', 'expensive_function' );
 
+// ✅ GOOD: Check context before running expensive code.
+add_action( 'init', function() {
+    if ( is_admin() || wp_doing_cron() ) {
+        return;
+    }
+    // Frontend-only code here.
+} );
+
 // ❌ CRITICAL: Database writes on every page load.
 add_action( 'wp_head', 'prefix_bad_tracking' );
 function prefix_bad_tracking() {
     update_option( 'last_visit', time() );
 }
 
+// ✅ GOOD: Use object cache buffer, flush via cron.
+add_action( 'shutdown', function() {
+    wp_cache_incr( 'page_views_buffer', 1, 'counters' );
+} );
+
 // ❌ WARNING: Using admin-ajax.php instead of REST API.
-// Prefer: register_rest_route()
+// Prefer: register_rest_route() - leaner bootstrap.
 ```
 
 ### PHP Code
@@ -156,16 +215,24 @@ function prefix_bad_tracking() {
 // ❌ WARNING: O(n) lookup - use isset() with associative array.
 in_array( $value, $array ); // Also missing strict = true.
 
+// ✅ GOOD: O(1) lookup with isset().
+$allowed = array( 'foo' => true, 'bar' => true );
+if ( isset( $allowed[ $value ] ) ) {
+    // Process.
+}
+
 // ❌ WARNING: Heredoc prevents late escaping.
 $html = <<<HTML
 <div>$unescaped_content</div>
 HTML;
+
+// ✅ GOOD: Escape at output.
+printf( '<div>%s</div>', esc_html( $content ) );
 ```
 
 ### Caching Issues
 ```php
 // ❌ WARNING: Uncached expensive function calls.
-// These functions query the database on every call - wrap with caching:
 url_to_postid( $url );
 attachment_url_to_postid( $attachment_url );
 count_user_posts( $user_id );
@@ -208,6 +275,12 @@ setInterval( () => fetch( '/wp-json/...' ), 5000 );
 ```php
 // ❌ WARNING: Synchronous external HTTP in page load.
 wp_remote_get( $url ); // Cache result or move to cron.
+
+// ✅ GOOD: Set timeout and handle errors.
+$response = wp_remote_get( $url, array( 'timeout' => 2 ) );
+if ( is_wp_error( $response ) ) {
+    return get_fallback_data();
+}
 ```
 
 ### WP Cron
@@ -268,6 +341,8 @@ echo $response['body']; // Check is_wp_error() first!
 // Better: Presence of 'is_featured' key = true, absence = false.
 ```
 
+**For deeper context on any pattern:** Load `references/anti-patterns.md`
+
 ## Severity Definitions
 
 | Severity | Description |
@@ -296,6 +371,18 @@ Structure findings as:
 - Total issues: X Critical, Y Warnings, Z Info
 - Estimated impact: [High/Medium/Low]
 ```
+
+## Common Mistakes
+
+When performing performance reviews, avoid these errors:
+
+| Mistake | Why It's Wrong | Fix |
+|---------|----------------|-----|
+| Flagging `posts_per_page => -1` in admin-only code | Admin queries don't face public scale | Check context - admin, CLI, cron are lower risk |
+| Missing the `session_start()` buried in a plugin | Cache bypass affects entire site | Always grep for `session_start` across all code |
+| Ignoring `no_found_rows` for non-paginated queries | Small optimization but adds up | Flag as INFO, not WARNING |
+| Recommending object cache on shared hosting | Many shared hosts lack persistent cache | Check hosting environment first |
+| Only reviewing PHP, missing JS polling | JS `setInterval` + fetch = self-DDoS | Review `.js` files for polling patterns |
 
 ## Deep-Dive References
 
