@@ -81,6 +81,19 @@ Scan for:
 - `wp_enqueue_script` without version → INFO: Cache busting issues
 - `wp_enqueue_script` without `defer`/`async` strategy → INFO: Blocks rendering
 - Missing `THEME_VERSION` constant → INFO: Version management
+- `wp_enqueue_script` without conditional check → WARNING: Assets load globally when only needed on specific pages
+
+### Transients & Options
+Scan for:
+- `set_transient` with dynamic keys (e.g., `user_{$id}`) → WARNING: Table bloat without object cache
+- `set_transient` for frequently-changing data → WARNING: Defeats caching purpose
+- Large data in transients on shared hosting → WARNING: DB bloat without object cache
+
+### WP-Cron
+Scan for:
+- Missing `DISABLE_WP_CRON` constant → INFO: Cron runs on page requests
+- Long-running cron callbacks (loops over all users/posts) → CRITICAL: Blocks cron queue
+- `wp_schedule_event` without checking if already scheduled → WARNING: Duplicate schedules
 
 ## Search Patterns for Quick Detection
 
@@ -111,6 +124,16 @@ grep -rn "cache_results.*false" .
 # JavaScript bundle issues
 grep -rn "import.*from.*lodash['\"]" .  # Full lodash import
 grep -rn "registerBlockStyle" .  # Many block styles = performance issue
+
+# Asset loading issues
+grep -rn "wp_enqueue_script\|wp_enqueue_style" . | grep -v "is_page\|is_singular\|is_admin"
+
+# Transient misuse
+grep -rn "set_transient.*\\\$" .  # Dynamic transient keys
+grep -rn "set_transient" . | grep -v "get_transient"  # Set without checking first
+
+# WP-Cron issues
+grep -rn "wp_schedule_event" . | grep -v "wp_next_scheduled"  # Missing schedule check
 ```
 
 ## Platform Context
@@ -289,6 +312,39 @@ if ( is_wp_error( $response ) ) {
 // Add to wp-config.php:
 define( 'DISABLE_WP_CRON', true );
 // Run via server cron: * * * * * wp cron event run --due-now
+
+// ❌ CRITICAL: Long-running cron blocks entire queue.
+add_action( 'my_daily_sync', function() {
+    foreach ( get_users() as $user ) { // 50k users = hours.
+        sync_user_data( $user );
+    }
+} );
+
+// ✅ GOOD: Batch processing with rescheduling.
+add_action( 'my_batch_sync', function() {
+    $offset = (int) get_option( 'sync_offset', 0 );
+    $users  = get_users( array( 'number' => 100, 'offset' => $offset ) );
+
+    if ( empty( $users ) ) {
+        delete_option( 'sync_offset' );
+        return;
+    }
+
+    foreach ( $users as $user ) {
+        sync_user_data( $user );
+    }
+
+    update_option( 'sync_offset', $offset + 100 );
+    wp_schedule_single_event( time() + 60, 'my_batch_sync' );
+} );
+
+// ❌ WARNING: Scheduling without checking if already scheduled.
+wp_schedule_event( time(), 'hourly', 'my_task' ); // Creates duplicates!
+
+// ✅ GOOD: Check before scheduling.
+if ( ! wp_next_scheduled( 'my_task' ) ) {
+    wp_schedule_event( time(), 'hourly', 'my_task' );
+}
 ```
 
 ### Cache Bypass Issues
@@ -303,6 +359,58 @@ session_start(); // Check plugins for this - entire site becomes uncacheable!
 
 // ❌ WARNING: Setting cookies on public pages.
 setcookie( 'visitor_id', $id ); // Prevents caching for that user.
+```
+
+### Transients Misuse
+```php
+// ❌ WARNING: Dynamic transient keys create table bloat (without object cache).
+set_transient( "user_{$user_id}_cart", $data, HOUR_IN_SECONDS );
+// 10,000 users = 10,000 rows in wp_options!
+
+// ✅ GOOD: Use object cache for user-specific data.
+wp_cache_set( "cart_{$user_id}", $data, 'user_carts', HOUR_IN_SECONDS );
+
+// ❌ WARNING: Transients for frequently-changing data defeats purpose.
+set_transient( 'visitor_count', $count, 60 ); // Changes every minute.
+
+// ✅ GOOD: Use object cache for volatile data.
+wp_cache_set( 'visitor_count', $count, 'stats' );
+
+// ❌ WARNING: Large data in transients on shared hosting.
+set_transient( 'api_response', $megabytes_of_json, DAY_IN_SECONDS );
+// Without object cache = serialized blob in wp_options.
+
+// ✅ GOOD: Check hosting before using transients for large data.
+if ( wp_using_ext_object_cache() ) {
+    set_transient( 'api_response', $data, DAY_IN_SECONDS );
+} else {
+    // Store in files or skip caching on shared hosting.
+}
+```
+
+### Asset Loading
+```php
+// ❌ WARNING: Assets load globally when only needed on specific pages.
+add_action( 'wp_enqueue_scripts', function() {
+    wp_enqueue_script( 'contact-form-js', ... );
+    wp_enqueue_style( 'contact-form-css', ... );
+} );
+
+// ✅ GOOD: Conditional enqueue based on page/template.
+add_action( 'wp_enqueue_scripts', function() {
+    if ( is_page( 'contact' ) || is_page_template( 'contact-template.php' ) ) {
+        wp_enqueue_script( 'contact-form-js', ... );
+        wp_enqueue_style( 'contact-form-css', ... );
+    }
+} );
+
+// ✅ GOOD: Only load WooCommerce assets on shop pages.
+add_action( 'wp_enqueue_scripts', function() {
+    if ( ! is_woocommerce() && ! is_cart() && ! is_checkout() ) {
+        wp_dequeue_style( 'woocommerce-general' );
+        wp_dequeue_script( 'wc-cart-fragments' );
+    }
+} );
 ```
 
 ### External API Requests
