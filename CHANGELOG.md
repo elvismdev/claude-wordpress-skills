@@ -2,12 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## 1.3.1 - 2025-11-28
 
-## [Unreleased]
+### Improved
 
-## [1.3.0] - 2025-11-26
+- **Enhanced skill trigger keywords** for better automatic invocation
+  - Added triggers: "before launch", "anti-patterns", "slow queries", "scale WordPress", "code review", "optimization audit"
+  - Updated README.md trigger phrases table to match SKILL.md description
+  - Added natural language examples: "Check my theme before launch", "Find anti-patterns in this plugin"
+
+## 1.3.0 - 2025-11-26
 
 ### Added
 
@@ -21,20 +25,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Comprehensive code examples** with BAD/GOOD patterns for all new checks
 - **CLAUDE.md** project documentation for Claude Code guidance
 
-## [1.2.1] - 2025-11-25
+## 1.2.1 - 2025-11-25
 
 ### Changed
 
 - Added metadata section to marketplace.json for better plugin discovery
 
-## [1.2.0] - 2025-11-25
+## 1.2.0 - 2025-11-25
 
 ### Changed
 
 - Refined README installation instructions
 - Improved plugin metadata consistency
 
-## [1.1.0] - 2025-11-25
+## 1.1.0 - 2025-11-25
 
 ### Added
 
@@ -49,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Commands differentiate between quick scan (grep patterns) and full review (deep analysis)
 - Clear instructions for loading reference files when needed
 
-## [1.0.0] - 2025-11-25
+## 1.0.0 - 2025-11-25
 
 ### Added
 
@@ -79,10 +83,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 2,600+ lines of documentation across 5 files
 - 28 quick-lookup patterns in anti-patterns.md
 - 90+ code examples with BAD/GOOD comparisons
-
-[Unreleased]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.3.0...HEAD
-[1.3.0]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.2.1...v1.3.0
-[1.2.1]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/elvismdev/claude-wordpress-skills/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/elvismdev/claude-wordpress-skills/releases/tag/v1.0.0

@@ -100,9 +100,11 @@ Skills also activate automatically based on context. Just ask naturally:
 
 ```
 Review this plugin for performance issues
-Audit this theme for scalability problems  
+Audit this theme for scalability problems
 Check this code for slow database queries
 Help me optimize this WP_Query
+Check my theme before launch
+Find anti-patterns in this plugin
 ```
 
 Claude will detect the context and apply the appropriate skill.
@@ -111,7 +113,7 @@ Claude will detect the context and apply the appropriate skill.
 
 | Skill | Trigger Phrases |
 |-------|-----------------|
-| wp-performance-review | "performance review", "optimization audit", "slow WordPress", "scale WordPress", "high-traffic" |
+| wp-performance-review | "performance review", "optimization audit", "slow WordPress", "slow queries", "scale WordPress", "high-traffic", "code review", "before launch", "anti-patterns", "timeout", "500 error", "out of memory" |
 
 ## What's Included
 
