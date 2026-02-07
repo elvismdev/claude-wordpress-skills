@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-02-06
+
+### Added
+
+- **wp-security-review** skill: Code-level security vulnerability detection (XSS, SQL injection, CSRF, privilege escalation, file upload security) with 5 reference docs and 2 slash commands (`/wp-sec-review`, `/wp-sec`)
+- **wp-plugin-development** skill: Plugin architecture and WordPress.org standards review (plugin structure, lifecycle hooks, CPT/taxonomies, Settings API, hooks, i18n) with 4 reference docs and 2 slash commands (`/wp-plugin-review`, `/wp-plugin`)
+- **wp-block-development** skill: Gutenberg block development patterns (block.json, dynamic vs static blocks, InnerBlocks, Interactivity API for WP 6.5+) with 4 reference docs and 2 slash commands (`/wp-block-review`, `/wp-block`)
+- **wp-theme-development** skill: Block theme development and Full Site Editing patterns (theme.json v3, template hierarchy, global styles, style variations) with 4 reference docs and 2 slash commands (`/wp-theme-review`, `/wp-theme`)
+- **wp-woocommerce-dev** skill: WooCommerce extension development (HPOS compatibility, payment gateways, WC CRUD, cart fragments optimization, Action Scheduler, template overrides) with 3 reference docs and 2 slash commands (`/wp-woo-review`, `/wp-woo`)
+
+### Changed
+
+- Updated README.md with all 6 skills documented, including complete trigger phrases and command listings
+- Updated marketplace.json with comprehensive skill descriptions
+- Bumped version to 2.0.0 reflecting complete plugin with all planned WordPress development domains covered
+- Enhanced skill descriptions to reflect modern WordPress development (WP 6.5+ for blocks, WP 6.6+ for themes, WC 8.2+ for WooCommerce)
+
 ## 1.3.1 - 2025-11-28
 
 ### Improved
